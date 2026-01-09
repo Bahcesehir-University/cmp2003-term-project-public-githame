@@ -3,6 +3,7 @@
 #include "analyzer.h"
 #include <fstream>
 #include <algorithm>
+#include <cctype>
 using namespace std;
 
 // HELPERS AND PARSING FUNCTIONS
@@ -216,3 +217,4 @@ std::vector<SlotCount> TripAnalyzer::topBusySlots(int k) const
     }
     return result;
 }
+

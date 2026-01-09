@@ -8,8 +8,8 @@
 #pragma once
 #include <string>
 #include <vector>
-#include <unordered_map> // for hash tables
-#include <utility>
+#include <unordered_map>
+#include <map>
 
 // Total number of trips for a single pickup zone (PickupZoneID).
 // Holds the total number of trips for a single pickup zone.
@@ -23,7 +23,7 @@ struct ZoneCount
 };
 
 // Total number of trips for a (zone, hour) slot.
-// Shows the level of activity in a particular pickup zone at a given time by mixing zone + hour + trip count.
+// Shows the level of activity in a particular pickup zone at a given time by Combines zone + hour + trip count.
 struct SlotCount
 {
     std::string zone;
@@ -31,26 +31,7 @@ struct SlotCount
     long long count;
 };
 
-// this is a custom hash functor for the (zone, hour) part.
-// It should allows us to use unordered_map<pair<string,int>, long long> better unlike default map or nested maps
-struct SlotHash
-{
-    size_t operator()(const std::pair<std::string, int> &p) const
-    {
-        // Simple string hash + mix hour.
-        size_t h = 0;
-        for (char c : p.first)
-            // 131 is a common multiplier for string hashing.
-            h = h * 131 + static_cast<unsigned char>(c);
-        // Add a big prime to the hour.
-        // A 32-bit prime that frequently appears in hash mixing is 2654435761, not randomly chosen.
-        // The XOR here helps combine the both parts without too much cancellation.
-        // 2654435761 = 2^31
-        return h ^ (static_cast<size_t>(p.second) * 2654435761U);
-    }
-};
-
-// This is the main analyzer classfor trip data,it reads the CSV, aggregates counts, returns top-k results.
+// This is the main analyzer class for trip data, it reads the CSV, aggregates counts, returns top-k results.
 class TripAnalyzer
 {
 public:
@@ -71,5 +52,6 @@ private:
     std::unordered_map<std::string, long long> zoneCount;
 
     // (zone, hour) to trips count (Zone ID + hour slot)
-    std::unordered_map<std::pair<std::string, int>, long long, SlotHash> slotCount;
+    // Using map with pair as key for simplicity (no custom hash needed)
+    std::map<std::pair<std::string, int>, long long> slotCount;
 };

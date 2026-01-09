@@ -41,11 +41,11 @@ static inline int parseHourFromDatetime(const char *p)
         ++p;
 
     // now at HH:MM
-    if (!std::isdigit(static_cast<unsigned char>(*p)))
+    if (!isdigit(static_cast<unsigned char>(*p)))
         return -1;
 
     int hour = 0;
-    while (std::isdigit(static_cast<unsigned char>(*p)))
+    while (isdigit(static_cast<unsigned char>(*p)))
     {
         hour = hour * 10 + (*p - '0');
         ++p;
@@ -135,9 +135,18 @@ void TripAnalyzer::ingestFile(const std::string &csvPath)
         if (!headerHandled)
         {
             headerHandled = true;
+
             if (line.find("TripID") != string::npos)
                 continue;
-            // else: treat first line as data
+
+            // Backup check: if first field isn't a digit, it's probably a header row
+            const char *p = line.c_str();
+            while (*p == ' ' || *p == '\t')
+                ++p;
+            if (!isdigit(static_cast<unsigned char>(*p)))
+                continue;
+
+            // else: treat first line as data (fall through to parse)
         }
 
         string zone;
@@ -217,4 +226,3 @@ std::vector<SlotCount> TripAnalyzer::topBusySlots(int k) const
     }
     return result;
 }
-
